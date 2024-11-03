@@ -56,9 +56,9 @@ last contributed to more than a year ago may not be included in the statistics
 due to limitations in the results returned by the API.
 
 For more information on inaccuracies, see issue
-[#2](https://github.com/alchemist009/github-stats/issues/2),
-[#3](https://github.com/alchemist009/github-stats/issues/3), and
-[#13](https://github.com/alchemist009/github-stats/issues/13).
+[#2](https://github.com/jstrieb/github-stats/issues/2),
+[#3](https://github.com/jstrieb/github-stats/issues/3), and
+[#13](https://github.com/jstrieb/github-stats/issues/13).
 
 # Installation
 
@@ -72,9 +72,9 @@ For more information on inaccuracies, see issue
    regenerate the token.
    - Some users are reporting that it can take a few minutes for the personal
      access token to work. For more, see 
-     [#30](https://github.com/alchemist009/github-stats/issues/30).
+     [#30](https://github.com/jstrieb/github-stats/issues/30).
 2. Create a copy of this repository by clicking
-   [here](https://github.com/alchemist009/github-stats/generate). Note: this is
+   [here](https://github.com/jstrieb/github-stats/generate). Note: this is
    **not** the same as forking a copy because it copies everything fresh,
    without the huge commit history. 
 3. Go to the "Secrets" page of your copy of the repository. If this is the
