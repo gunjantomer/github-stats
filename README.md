@@ -4,15 +4,15 @@
 https://github.community/t/support-theme-context-for-images-in-light-vs-dark-mode/147981/84
 -->
 <a href="https://github.com/gunjantomer/github-stats">
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/overview.svg#gh-dark-mode-only" />
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/languages.svg#gh-dark-mode-only" />
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/streak.svg#gh-dark-mode-only" />
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/overview.svg#gh-light-mode-only" />
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/languages.svg#gh-light-mode-only" />
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/streak.svg#gh-light-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/overview.svg#gh-dark-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/languages.svg#gh-dark-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/streak.svg#gh-dark-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/overview.svg#gh-light-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/languages.svg#gh-light-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/streak.svg#gh-light-mode-only" />
 </a>
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/contributions.svg#gh-dark-mode-only" />
-<img src="https://github.com/gunjantomer/github-stats/blob/master/generated/contributions.svg#gh-light-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/contributions.svg#gh-dark-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/contributions.svg#gh-light-mode-only" />
 
 Generate visualizations of GitHub user and repository statistics with GitHub
 Actions. Visualizations can include data for both private repositories, and for
@@ -98,7 +98,7 @@ For more information on inaccuracies, see issue
    - To show statistics only for "owned" repositories and not forks with
      contributions, add an environment variable (under the `env` header in the
      [main
-     workflow](https://github.com/gunjantomer/github-stats/blob/master/.github/workflows/main.yml))
+     workflow](https://github.com/gunjantomer/github-stats/blob/main/.github/workflows/main.yml))
      called `EXCLUDE_FORKED_REPOS` with a value of `true`.
    - These other values are added as secrets by default to prevent leaking
      information about private repositories. If you're not worried about that,
@@ -116,20 +116,20 @@ For more information on inaccuracies, see issue
    following lines of code into your markdown content. Change the `username`
    value to your GitHub username.
    ```md
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/overview.svg#gh-dark-mode-only)
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/overview.svg#gh-light-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/overview.svg#gh-dark-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/overview.svg#gh-light-mode-only)
    ```
    ```md
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/languages.svg#gh-dark-mode-only)
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/languages.svg#gh-light-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/languages.svg#gh-dark-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/languages.svg#gh-light-mode-only)
    ```
    ```md
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/streak.svg#gh-dark-mode-only)
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/streak.svg#gh-light-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/streak.svg#gh-dark-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/streak.svg#gh-light-mode-only)
    ```
    ```md
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/contributions.svg#gh-dark-mode-only)
-   ![](https://raw.githubusercontent.com/username/github-stats/master/generated/contributions.svg#gh-light-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/contributions.svg#gh-dark-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/contributions.svg#gh-light-mode-only)
    ```
 9. Link back to this repository so that others can generate their own
    statistics images.

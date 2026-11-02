@@ -12,24 +12,24 @@
   <table>
     <tr>
       <td>
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/overview.svg#gh-dark-mode-only" alt="GitHub statistics" width="400"/>
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/overview.svg#gh-light-mode-only" alt="GitHub statistics" width="400"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/overview.svg#gh-dark-mode-only" alt="GitHub statistics" width="400"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/overview.svg#gh-light-mode-only" alt="GitHub statistics" width="400"/>
       </td>
       <td>
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/languages.svg#gh-dark-mode-only" alt="Languages used" width="400"/>
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/languages.svg#gh-light-mode-only" alt="Languages used" width="400"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/languages.svg#gh-dark-mode-only" alt="Languages used" width="400"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/languages.svg#gh-light-mode-only" alt="Languages used" width="400"/>
       </td>
     </tr>
     <tr>
       <td colspan="2" align="center">
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/streak.svg#gh-dark-mode-only" alt="Contribution streak" width="400"/>
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/streak.svg#gh-light-mode-only" alt="Contribution streak" width="400"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/streak.svg#gh-dark-mode-only" alt="Contribution streak" width="400"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/streak.svg#gh-light-mode-only" alt="Contribution streak" width="400"/>
       </td>
     </tr>
     <tr>
       <td colspan="2" align="center">
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/contributions.svg#gh-dark-mode-only" alt="Contribution graph"/>
-        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/master/generated/contributions.svg#gh-light-mode-only" alt="Contribution graph"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/contributions.svg#gh-dark-mode-only" alt="Contribution graph"/>
+        <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/contributions.svg#gh-light-mode-only" alt="Contribution graph"/>
       </td>
     </tr>
   </table>
