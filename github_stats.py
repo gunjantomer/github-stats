@@ -611,6 +611,9 @@ Languages:
             .get("contributionCalendar", {})
             .get("weeks", [])
         )
+        # GraphQL returns each week as an object wrapping its day list; flatten
+        # to a list of day dicts so consumers can iterate weeks -> days directly.
+        weeks = [w.get("contributionDays", []) for w in weeks]
         self._calendar = weeks
         return weeks
 
