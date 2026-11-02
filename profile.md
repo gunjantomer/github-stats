@@ -33,18 +33,11 @@
   </tr>
   <tr>
     <td colspan="2" align="center">
-      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/contributions.svg#gh-dark-mode-only" alt="Contribution graph"/>
-      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/contributions.svg#gh-light-mode-only" alt="Contribution graph"/>
+      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/github-contribution-grid-snake-dark.svg#gh-dark-mode-only" alt="Contribution snake animation" width="100%"/>
+      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/github-contribution-grid-snake.svg#gh-light-mode-only" alt="Contribution snake animation" width="100%"/>
     </td>
   </tr>
 </table>
-
-## 🐍 Contribution Snake
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/github-contribution-grid-snake-dark.svg#gh-dark-mode-only" alt="Contribution snake animation"/>
-  <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/github-contribution-grid-snake.svg#gh-light-mode-only" alt="Contribution snake animation"/>
-</div>
 
 ## 🛠️ Tools & Languages
 
