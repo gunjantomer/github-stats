@@ -1,0 +1,12 @@
+<svg id="gh-light-mode-only" width="480" height="192" xmlns="http://www.w3.org/2000/svg">
+<style>
+svg { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif; }
+#background { fill: white; stroke: rgb(225, 228, 232); stroke-width: 1px; }
+.body { font-size: 13px; fill: rgb(88, 96, 105); }
+</style>
+<g>
+<rect x="5" y="5" width="470" height="182" rx="6" ry="6" id="background" />
+<text x="18" y="100" class="body">Contribution snake animation appears here.</text>
+<text x="18" y="122" class="body">Generated nightly by the "Generate Contribution Snake" workflow.</text>
+</g>
+</svg>
