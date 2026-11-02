@@ -1,0 +1,65 @@
+<svg id="gh-dark-mode-only" width="{{ width }}" height="{{ height }}" xmlns="http://www.w3.org/2000/svg">
+<style>
+svg {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+}
+
+#background {
+  fill: white;
+  stroke: rgb(225, 228, 232);
+  stroke-width: 1px;
+}
+
+#gh-dark-mode-only:target #background {
+  fill: #0d1117;
+  stroke-width: 0.5px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  fill: rgb(3, 102, 214);
+}
+
+#gh-dark-mode-only:target .title {
+  fill: #58a6ff;
+}
+
+.month {
+  font-size: 10px;
+  fill: rgb(88, 96, 105);
+}
+
+#gh-dark-mode-only:target .month {
+  fill: #8b949e;
+}
+
+.legend {
+  font-size: 10px;
+  fill: rgb(88, 96, 105);
+}
+
+#gh-dark-mode-only:target .legend {
+  fill: #8b949e;
+}
+
+.level0 { fill: #ebedf0; }
+.level1 { fill: #9be9a8; }
+.level2 { fill: #40c463; }
+.level3 { fill: #30a14e; }
+.level4 { fill: #216e39; }
+
+#gh-dark-mode-only:target .level0 { fill: #161b22; }
+#gh-dark-mode-only:target .level1 { fill: #0e4429; }
+#gh-dark-mode-only:target .level2 { fill: #006d32; }
+#gh-dark-mode-only:target .level3 { fill: #26a641; }
+#gh-dark-mode-only:target .level4 { fill: #39d353; }
+</style>
+<g>
+<rect x="5" y="5" width="{{ bw }}" height="{{ bh }}" rx="6" ry="6" id="background" />
+<text x="18" y="20" class="title">Contribution Activity</text>
+<g>{{ month_labels }}</g>
+<g>{{ cells }}</g>
+<g>{{ legend }}</g>
+</g>
+</svg>

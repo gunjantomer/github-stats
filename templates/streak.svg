@@ -1,0 +1,66 @@
+<svg id="gh-dark-mode-only" width="360" height="210" xmlns="http://www.w3.org/2000/svg">
+<style>
+svg {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+}
+
+#background {
+  fill: white;
+  stroke: rgb(225, 228, 232);
+  stroke-width: 1px;
+}
+
+#gh-dark-mode-only:target #background {
+  fill: #0d1117;
+  stroke-width: 0.5px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  fill: rgb(3, 102, 214);
+}
+
+#gh-dark-mode-only:target .title {
+  fill: #58a6ff;
+}
+
+.big {
+  font-size: 34px;
+  font-weight: 700;
+  fill: #f0803c;
+}
+
+.unit {
+  font-size: 15px;
+  font-weight: 600;
+  fill: #f0803c;
+}
+
+.meta {
+  font-size: 12px;
+  fill: rgb(88, 96, 105);
+}
+
+#gh-dark-mode-only:target .meta {
+  fill: #8b949e;
+}
+
+.value {
+  font-weight: 700;
+  fill: rgb(3, 102, 214);
+}
+
+#gh-dark-mode-only:target .value {
+  fill: #58a6ff;
+}
+</style>
+<g>
+<rect x="5" y="5" width="350" height="200" rx="6" ry="6" id="background" />
+<text x="21" y="34" class="title">Contribution Streak</text>
+<text x="21" y="96" class="big">{{ current }}</text>
+<text x="21" y="120" class="unit">day current streak</text>
+<text x="21" y="150" class="meta"><tspan class="value">{{ longest }}</tspan> days longest streak</text>
+<text x="21" y="172" class="meta"><tspan class="value">{{ year_total }}</tspan> contributions in {{ year }}</text>
+</g>
+</svg>

@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Set, Tuple, Any, cast
 
 import aiohttp
@@ -244,6 +245,49 @@ query {{
 }}
 """
 
+    @staticmethod
+    def viewer_login() -> str:
+        """
+        Minimal query used to verify that the access token is valid and scoped
+        correctly. Returns the viewer login, or nothing when the token is
+        missing, expired, or lacks the required scopes.
+        :return: GraphQL query returning only the viewer login
+        """
+        return """
+query {
+  viewer {
+    login
+  }
+}
+"""
+
+    @staticmethod
+    def contributions_calendar(from_date: str, to_date: str) -> str:
+        """
+        Fetch the daily contribution calendar for a date range, which powers
+        the streak and contribution-graph cards.
+        :param from_date: ISO-8601 start of the range
+        :param to_date: ISO-8601 end of the range
+        :return: GraphQL query for the contribution calendar in that range
+        """
+        return f"""
+query {{
+  viewer {{
+    contributionsCollection(from: "{from_date}", to: "{to_date}") {{
+      contributionCalendar {{
+        totalContributions
+        weeks {{
+          contributionDays {{
+            contributionCount
+            date
+          }}
+        }}
+      }}
+    }}
+  }}
+}}
+"""
+
 
 class Stats(object):
     """
@@ -273,6 +317,7 @@ class Stats(object):
         self._repos: Optional[Set[str]] = None
         self._lines_changed: Optional[Tuple[int, int]] = None
         self._views: Optional[int] = None
+        self._calendar: Optional[List[List[Dict[str, Any]]]] = None
 
     async def to_str(self) -> str:
         """
@@ -519,6 +564,55 @@ Languages:
 
         self._views = total
         return total
+
+    async def preflight(self) -> str:
+        """
+        Verify that the access token is valid before generating any images, so
+        that an expired token cannot silently overwrite good images with zeros.
+        :return: the authenticated viewer's login
+        :raises RuntimeError: when the token is missing, expired, or mis-scoped
+        """
+        result = await self.queries.query(Queries.viewer_login())
+        if result.get("errors"):
+            raise RuntimeError(
+                "GitHub API rejected the token: "
+                + str(result["errors"][0].get("message", "unknown error"))
+            )
+        login = result.get("data", {}).get("viewer", {}).get("login")
+        if not login:
+            raise RuntimeError(
+                "GitHub API returned no authenticated viewer. ACCESS_TOKEN is "
+                "missing, expired, or lacks the required read:user/repo scopes."
+            )
+        return login
+
+    @property
+    async def contributions_calendar(self) -> List[List[Dict[str, Any]]]:
+        """
+        Daily contribution calendar for roughly the trailing year, grouped into
+        weeks (Sunday -> Saturday). Powers the streak and contribution-graph
+        cards. Returns an empty list when the API has no data for the range.
+        :return: list of weeks, each a list of {date, contributionCount} days
+        """
+        if self._calendar is not None:
+            return self._calendar
+
+        today = datetime.now(timezone.utc)
+        from_date = (today - timedelta(days=370)).strftime("%Y-%m-%dT00:00:00Z")
+        to_date = today.strftime("%Y-%m-%dT23:59:59Z")
+
+        result = await self.queries.query(
+            Queries.contributions_calendar(from_date, to_date)
+        )
+        weeks = (
+            result.get("data", {})
+            .get("viewer", {})
+            .get("contributionsCollection", {})
+            .get("contributionCalendar", {})
+            .get("weeks", [])
+        )
+        self._calendar = weeks
+        return weeks
 
 
 ###############################################################################
