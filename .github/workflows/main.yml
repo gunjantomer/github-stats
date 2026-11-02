@@ -15,8 +15,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Check out repository under $GITHUB_WORKSPACE, so the job can access it
+    # Check out repository under $GITHUB_WORKSPACE, so the job can access it.
+    # Full history so the commit step can rebase onto a main that another
+    # workflow (e.g. the snake job) may have advanced in the meantime.
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     # Run using Python 3.11 for consistency and aiohttp
     - name: Set up Python 3.11
@@ -54,7 +58,16 @@ jobs:
         git add generated
         if ! git diff --cached --quiet; then
           git commit -m 'Update generated files'
-          git push
+          # The snake workflow (or another run) may push to main between our
+          # checkout and push. Rebase onto the latest main and retry so a
+          # non-fast-forward rejection does not fail the run.
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              break
+            fi
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; echo 'Rebase failed'; exit 1; }
+          done
         else
           echo 'No changes to generated files'
         fi
