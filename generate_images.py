@@ -192,6 +192,27 @@ async def generate_streak(s: Stats) -> None:
         f.write(output)
 
 
+async def generate_churn(s: Stats) -> None:
+    """
+    Generate an SVG badge with code churn (lines added/removed) and the
+    last-14-day repository view count. Uses data already fetched by Stats.
+    :param s: Represents user's GitHub statistics
+    """
+    with open("templates/churn.svg", "r") as f:
+        output = f.read()
+
+    added, removed = await s.lines_changed
+    views = await s.views
+
+    output = re.sub("{{ added }}", f"{added:,}", output)
+    output = re.sub("{{ removed }}", f"{removed:,}", output)
+    output = re.sub("{{ views }}", f"{views:,}", output)
+
+    generate_output_folder()
+    with open("generated/churn.svg", "w") as f:
+        f.write(output)
+
+
 async def generate_contributions(s: Stats) -> None:
     """
     Generate an SVG contribution graph (heatmap) for the trailing year.
@@ -333,6 +354,7 @@ async def main() -> None:
             generate_languages(s),
             generate_overview(s),
             generate_streak(s),
+            generate_churn(s),
             generate_contributions(s),
         )
 
