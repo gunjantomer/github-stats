@@ -317,6 +317,8 @@ class Stats(object):
         self._repos: Optional[Set[str]] = None
         self._lines_changed: Optional[Tuple[int, int]] = None
         self._views: Optional[int] = None
+        self._prs_opened: Optional[int] = None
+        self._prs_merged: Optional[int] = None
         self._calendar: Optional[List[List[Dict[str, Any]]]] = None
 
     async def to_str(self) -> str:
@@ -564,6 +566,34 @@ Languages:
 
         self._views = total
         return total
+
+    @property
+    async def prs_opened(self) -> int:
+        """
+        :return: total number of pull requests the user has opened (all time)
+        """
+        if self._prs_opened is not None:
+            return self._prs_opened
+        r = await self.queries.query_rest(
+            "/search/issues",
+            params={"q": f"is:pr author:{self.username}", "per_page": 1},
+        )
+        self._prs_opened = int(r.get("total_count", 0)) if isinstance(r, dict) else 0
+        return self._prs_opened
+
+    @property
+    async def prs_merged(self) -> int:
+        """
+        :return: total number of the user's pull requests that were merged
+        """
+        if self._prs_merged is not None:
+            return self._prs_merged
+        r = await self.queries.query_rest(
+            "/search/issues",
+            params={"q": f"is:pr author:{self.username} is:merged", "per_page": 1},
+        )
+        self._prs_merged = int(r.get("total_count", 0)) if isinstance(r, dict) else 0
+        return self._prs_merged
 
     async def preflight(self) -> str:
         """
