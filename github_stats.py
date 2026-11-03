@@ -528,10 +528,25 @@ Languages:
         """
         if self._lines_changed is not None:
             return self._lines_changed
+
+        repos = await self.repos
+        # GitHub computes contributor stats on demand and answers HTTP 202
+        # until the numbers are ready. Query every repo concurrently so the
+        # step is bounded by the slowest repo — GitHub caches the result for
+        # the next run — instead of summing up to ~2 minutes of per-repo
+        # waiting across all of them, which used to time out and render 0.
+        results = await asyncio.gather(
+            *[self.queries.query_rest(f"/repos/{repo}/stats/contributors") for repo in repos],
+            return_exceptions=True,
+        )
+
         additions = 0
         deletions = 0
-        for repo in await self.repos:
-            r = await self.queries.query_rest(f"/repos/{repo}/stats/contributors")
+        for r in results:
+            if not isinstance(r, list):
+                # A repo that timed out on 202 yields {} (not a list): skip it
+                # rather than treating the placeholder as contributor data.
+                continue
             for author_obj in r:
                 # Handle malformed response from the API by skipping this repo
                 if not isinstance(author_obj, dict) or not isinstance(
@@ -558,11 +573,22 @@ Languages:
         if self._views is not None:
             return self._views
 
+        repos = await self.repos
+        # Same on-demand HTTP 202 behaviour as contributor stats; fetch
+        # concurrently so slow repos don't push the step past its budget.
+        # Repos the user does not own return 403 and contribute nothing.
+        results = await asyncio.gather(
+            *[self.queries.query_rest(f"/repos/{repo}/traffic/views") for repo in repos],
+            return_exceptions=True,
+        )
+
         total = 0
-        for repo in await self.repos:
-            r = await self.queries.query_rest(f"/repos/{repo}/traffic/views")
+        for r in results:
+            if not isinstance(r, dict):
+                continue
             for view in r.get("views", []):
-                total += view.get("count", 0)
+                if isinstance(view, dict):
+                    total += view.get("count", 0)
 
         self._views = total
         return total
