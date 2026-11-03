@@ -27,8 +27,8 @@
       <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/streak.svg#gh-light-mode-only" alt="Contribution streak" width="400"/>
     </td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/churn.svg#gh-dark-mode-only" alt="Code churn and traffic" width="400"/>
-      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/churn.svg#gh-light-mode-only" alt="Code churn and traffic" width="400"/>
+      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/pullrequests.svg#gh-dark-mode-only" alt="Pull request activity" width="400"/>
+      <img src="https://raw.githubusercontent.com/gunjantomer/github-stats/main/generated/pullrequests.svg#gh-light-mode-only" alt="Pull request activity" width="400"/>
     </td>
   </tr>
   <tr>

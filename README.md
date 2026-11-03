@@ -7,12 +7,12 @@ https://github.community/t/support-theme-context-for-images-in-light-vs-dark-mod
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/overview.svg#gh-dark-mode-only" />
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/languages.svg#gh-dark-mode-only" />
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/streak.svg#gh-dark-mode-only" />
-<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/churn.svg#gh-dark-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/pullrequests.svg#gh-dark-mode-only" />
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/overview.svg#gh-light-mode-only" />
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/languages.svg#gh-light-mode-only" />
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/streak.svg#gh-light-mode-only" />
 </a>
-<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/churn.svg#gh-light-mode-only" />
+<img src="https://github.com/gunjantomer/github-stats/blob/main/generated/pullrequests.svg#gh-light-mode-only" />
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/contributions.svg#gh-dark-mode-only" />
 <img src="https://github.com/gunjantomer/github-stats/blob/main/generated/contributions.svg#gh-light-mode-only" />
 
@@ -134,8 +134,8 @@ For more information on inaccuracies, see issue
    ![](https://raw.githubusercontent.com/username/github-stats/main/generated/contributions.svg#gh-light-mode-only)
    ```
    ```md
-   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/churn.svg#gh-dark-mode-only)
-   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/churn.svg#gh-light-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/pullrequests.svg#gh-dark-mode-only)
+   ![](https://raw.githubusercontent.com/username/github-stats/main/generated/pullrequests.svg#gh-light-mode-only)
    ```
    The contribution snake is produced by a separate workflow
    (`snake.yml`, using `Platane/snk`). To show it in your profile:
