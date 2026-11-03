@@ -192,24 +192,27 @@ async def generate_streak(s: Stats) -> None:
         f.write(output)
 
 
-async def generate_churn(s: Stats) -> None:
+async def generate_pullrequests(s: Stats) -> None:
     """
-    Generate an SVG badge with code churn (lines added/removed) and the
-    last-14-day repository view count. Uses data already fetched by Stats.
+    Generate an SVG badge summarising pull-request impact: pull requests
+    opened, merged, and the resulting merge rate. Uses search data fetched by
+    Stats rather than raw line counts, which no longer reflect effort in the
+    age of AI-generated code.
     :param s: Represents user's GitHub statistics
     """
-    with open("templates/churn.svg", "r") as f:
+    with open("templates/pullrequests.svg", "r") as f:
         output = f.read()
 
-    added, removed = await s.lines_changed
-    views = await s.views
+    opened = await s.prs_opened
+    merged = await s.prs_merged
+    rate = round(100 * merged / opened) if opened else 0
 
-    output = re.sub("{{ added }}", f"{added:,}", output)
-    output = re.sub("{{ removed }}", f"{removed:,}", output)
-    output = re.sub("{{ views }}", f"{views:,}", output)
+    output = re.sub("{{ opened }}", f"{opened:,}", output)
+    output = re.sub("{{ merged }}", f"{merged:,}", output)
+    output = re.sub("{{ rate }}", f"{rate}", output)
 
     generate_output_folder()
-    with open("generated/churn.svg", "w") as f:
+    with open("generated/pullrequests.svg", "w") as f:
         f.write(output)
 
 
@@ -354,7 +357,7 @@ async def main() -> None:
             generate_languages(s),
             generate_overview(s),
             generate_streak(s),
-            generate_churn(s),
+            generate_pullrequests(s),
             generate_contributions(s),
         )
 
