@@ -70,9 +70,9 @@ svg {
 <g>
 <rect x="5" y="5" width="350" height="200" rx="6" ry="6" id="background" />
 <text x="21" y="34" class="title">Pull Requests</text>
-<text x="21" y="96" class="big">217</text>
+<text x="21" y="96" class="big">0</text>
 <text x="21" y="120" class="unit">pull requests opened</text>
-<text x="21" y="150" class="meta"><tspan class="value merged">212</tspan> merged into main</text>
-<text x="21" y="172" class="meta"><tspan class="value rate">98%</tspan> merge rate</text>
+<text x="21" y="150" class="meta"><tspan class="value merged">0</tspan> merged into main</text>
+<text x="21" y="172" class="meta"><tspan class="value rate">0%</tspan> merge rate</text>
 </g>
 </svg>
