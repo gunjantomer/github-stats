@@ -205,11 +205,29 @@ async def generate_pullrequests(s: Stats) -> None:
 
     opened = await s.prs_opened
     merged = await s.prs_merged
-    rate = round(100 * merged / opened) if opened else 0
 
-    output = re.sub("{{ opened }}", f"{opened:,}", output)
-    output = re.sub("{{ merged }}", f"{merged:,}", output)
-    output = re.sub("{{ rate }}", f"{rate}", output)
+    if opened:
+        rate = round(100 * merged / opened)
+        big = f"{opened:,}"
+        unit = "pull requests opened"
+        line1 = f'<tspan class="value merged">{merged:,}</tspan> merged into main'
+        line2 = f'<tspan class="value rate">{rate}%</tspan> merge rate'
+    else:
+        # Search returned nothing (missing repo scope, private repos, or a
+        # transient failure). Fall back to GraphQL viewer contributions, which
+        # include private repositories, so the card never shows a misleading 0.
+        opened_c = await s.pr_contributions
+        commits = await s.commit_contributions
+        repos = await s.repository_contributions
+        big = f"{opened_c:,}"
+        unit = "pull requests opened (last year)"
+        line1 = f'<tspan class="value">{commits:,}</tspan> commits contributed (last year)'
+        line2 = f'<tspan class="value">{repos:,}</tspan> repositories created (last year)'
+
+    output = re.sub("{{ big }}", big, output)
+    output = re.sub("{{ unit }}", unit, output)
+    output = re.sub("{{ line1 }}", line1, output)
+    output = re.sub("{{ line2 }}", line2, output)
 
     generate_output_folder()
     with open("generated/pullrequests.svg", "w") as f:

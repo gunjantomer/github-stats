@@ -319,6 +319,7 @@ class Stats(object):
         self._views: Optional[int] = None
         self._prs_opened: Optional[int] = None
         self._prs_merged: Optional[int] = None
+        self._contrib: Optional[Dict[str, int]] = None
         self._calendar: Optional[List[List[Dict[str, Any]]]] = None
 
     async def to_str(self) -> str:
@@ -620,6 +621,47 @@ Languages:
         )
         self._prs_merged = int(r.get("total_count", 0)) if isinstance(r, dict) else 0
         return self._prs_merged
+
+    async def _contributions(self) -> Dict[str, int]:
+        """
+        Viewer-scoped contribution counts for the trailing year via GraphQL.
+        Unlike the Search API these include private repositories, because they
+        are scoped to the authenticated viewer rather than to token-granted
+        repositories. Cached across properties.
+        """
+        if self._contrib is None:
+            r = await self.queries.query(
+                """{
+  viewer {
+    contributionsCollection {
+      totalPullRequestContributions
+      totalPullRequestReviewContributions
+      totalCommitContributions
+      totalRepositoryContributions
+    }
+  }
+}"""
+            )
+            self._contrib = r.get("data", {}).get("viewer", {}).get("contributionsCollection", {}) or {}
+        return self._contrib
+
+    @property
+    async def pr_contributions(self) -> int:
+        if self._contrib is None:
+            await self._contributions()
+        return int(self._contrib.get("totalPullRequestContributions", 0))
+
+    @property
+    async def commit_contributions(self) -> int:
+        if self._contrib is None:
+            await self._contributions()
+        return int(self._contrib.get("totalCommitContributions", 0))
+
+    @property
+    async def repository_contributions(self) -> int:
+        if self._contrib is None:
+            await self._contributions()
+        return int(self._contrib.get("totalRepositoryContributions", 0))
 
     async def preflight(self) -> str:
         """
