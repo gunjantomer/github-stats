@@ -118,87 +118,6 @@ class Queries(object):
         return dict()
 
     @staticmethod
-    def repos_overview(
-        contrib_cursor: Optional[str] = None, owned_cursor: Optional[str] = None
-    ) -> str:
-        """
-        :return: GraphQL query with overview of user repositories
-        """
-        return f"""{{
-  viewer {{
-    login,
-    name,
-    repositories(
-        first: 100,
-        orderBy: {{
-            field: UPDATED_AT,
-            direction: DESC
-        }},
-        isFork: false,
-        after: {"null" if owned_cursor is None else '"'+ owned_cursor +'"'}
-    ) {{
-      pageInfo {{
-        hasNextPage
-        endCursor
-      }}
-      nodes {{
-        nameWithOwner
-        stargazers {{
-          totalCount
-        }}
-        forkCount
-        languages(first: 10, orderBy: {{field: SIZE, direction: DESC}}) {{
-          edges {{
-            size
-            node {{
-              name
-              color
-            }}
-          }}
-        }}
-      }}
-    }}
-    repositoriesContributedTo(
-        first: 100,
-        includeUserRepositories: false,
-        orderBy: {{
-            field: UPDATED_AT,
-            direction: DESC
-        }},
-        contributionTypes: [
-            COMMIT,
-            PULL_REQUEST,
-            REPOSITORY,
-            PULL_REQUEST_REVIEW
-        ]
-        after: {"null" if contrib_cursor is None else '"'+ contrib_cursor +'"'}
-    ) {{
-      pageInfo {{
-        hasNextPage
-        endCursor
-      }}
-      nodes {{
-        nameWithOwner
-        stargazers {{
-          totalCount
-        }}
-        forkCount
-        languages(first: 10, orderBy: {{field: SIZE, direction: DESC}}) {{
-          edges {{
-            size
-            node {{
-              name
-              color
-            }}
-          }}
-        }}
-      }}
-    }}
-  }}
-}}
-"""
-
-    @staticmethod
     def contrib_years() -> str:
         """
         :return: GraphQL query to get all years the user has been a contributor
@@ -345,54 +264,54 @@ Languages:
 
     async def get_stats(self) -> None:
         """
-        Get lots of summary statistics using one big query. Sets many attributes
+        Get lots of summary statistics. Sets many attributes.
+
+        Fine-grained personal access tokens cannot read the GraphQL *viewer
+        repository connections* (``viewer.repositories`` /
+        ``repositoriesContributedTo``), which is why the language, stars, forks
+        and repository-count cards came back empty. This instead enumerates
+        repositories via viewer-scoped ``contributionsCollection`` (which works
+        with fine-grained tokens, and includes private repositories) plus the
+        owner's repositories from the REST API, then reads languages / stars /
+        forks through per-repository lookups that fine-grained tokens can serve.
         """
         self._stargazers = 0
         self._forks = 0
         self._languages = dict()
         self._repos = set()
 
+        name_query = await self.queries.query("{ viewer { name login } }")
+        viewer = (
+            name_query.get("data", {}).get("viewer", {})
+            if isinstance(name_query, dict)
+            else {}
+        )
+        self._name = viewer.get("name") or viewer.get("login") or "No Name"
+
+        repos = await self._known_repos()
         exclude_langs_lower = {x.lower() for x in self._exclude_langs}
 
-        next_owned = None
-        next_contrib = None
-        while True:
-            raw_results = await self.queries.query(
-                Queries.repos_overview(
-                    owned_cursor=next_owned, contrib_cursor=next_contrib
-                )
+        for chunk in self._chunked(repos, 25):
+            aliases = "\n".join(
+                f'  r{i}: repository(owner: "{owner}", name: "{name}") {{'
+                " nameWithOwner isFork stargazers { totalCount } forkCount"
+                " languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {"
+                " edges { size node { name color } } } }"
+                for i, (owner, name) in enumerate(r.split("/", 1) for r in chunk)
             )
-            raw_results = raw_results if raw_results is not None else {}
+            raw_results = await self.queries.query(f"{{\n{aliases}\n}}")
+            data = raw_results.get("data", {}) if isinstance(raw_results, dict) else {}
 
-            self._name = raw_results.get("data", {}).get("viewer", {}).get("name", None)
-            if self._name is None:
-                self._name = (
-                    raw_results.get("data", {})
-                    .get("viewer", {})
-                    .get("login", "No Name")
-                )
-
-            contrib_repos = (
-                raw_results.get("data", {})
-                .get("viewer", {})
-                .get("repositoriesContributedTo", {})
-            )
-            owned_repos = (
-                raw_results.get("data", {}).get("viewer", {}).get("repositories", {})
-            )
-
-            repos = owned_repos.get("nodes", [])
-            if not self._ignore_forked_repos:
-                repos += contrib_repos.get("nodes", [])
-
-            for repo in repos:
+            for i, full in enumerate(chunk):
+                repo = data.get(f"r{i}")
                 if repo is None:
                     continue
-                name = repo.get("nameWithOwner")
-                if name in self._repos or name in self._exclude_repos:
+                if self._ignore_forked_repos and repo.get("isFork"):
                     continue
-                self._repos.add(name)
-                self._stargazers += repo.get("stargazers").get("totalCount", 0)
+                if full in self._repos or full in self._exclude_repos:
+                    continue
+                self._repos.add(full)
+                self._stargazers += repo.get("stargazers", {}).get("totalCount", 0)
                 self._forks += repo.get("forkCount", 0)
 
                 for lang in repo.get("languages", {}).get("edges", []):
@@ -410,23 +329,84 @@ Languages:
                             "color": lang.get("node", {}).get("color"),
                         }
 
-            if owned_repos.get("pageInfo", {}).get(
-                "hasNextPage", False
-            ) or contrib_repos.get("pageInfo", {}).get("hasNextPage", False):
-                next_owned = owned_repos.get("pageInfo", {}).get(
-                    "endCursor", next_owned
-                )
-                next_contrib = contrib_repos.get("pageInfo", {}).get(
-                    "endCursor", next_contrib
-                )
-            else:
-                break
-
         # TODO: Improve languages to scale by number of contributions to
         #       specific filetypes
         langs_total = sum([v.get("size", 0) for v in self._languages.values()])
-        for k, v in self._languages.items():
-            v["prop"] = 100 * (v.get("size", 0) / langs_total)
+        if langs_total:
+            for k, v in self._languages.items():
+                v["prop"] = 100 * (v.get("size", 0) / langs_total)
+
+    @staticmethod
+    def _chunked(seq, size):
+        for i in range(0, len(seq), size):
+            yield seq[i : i + size]
+
+    async def _contributed_repos(self) -> set:
+        """
+        :return: repositories the viewer contributed to (commits + pull
+            requests). Viewer-scoped, so it works with fine-grained tokens and
+            includes private repositories.
+        """
+        raw = await self.queries.query(
+            "{ viewer { contributionsCollection {"
+            " commitContributionsByRepository(maxRepositories: 100)"
+            " { repository { nameWithOwner } }"
+            " pullRequestContributionsByRepository(maxRepositories: 100)"
+            " { repository { nameWithOwner } }"
+            " } } }"
+        )
+        collection = (
+            raw.get("data", {}).get("viewer", {}).get("contributionsCollection", {})
+            if isinstance(raw, dict)
+            else {}
+        )
+        names = set()
+        for key in (
+            "commitContributionsByRepository",
+            "pullRequestContributionsByRepository",
+        ):
+            for entry in collection.get(key, []):
+                name = entry.get("repository", {}).get("nameWithOwner")
+                if name:
+                    names.add(name)
+        return names
+
+    async def _created_repos(self) -> list:
+        """
+        :return: full names of repositories the owner owns, via the REST API
+            (which fine-grained tokens serve, including private repositories).
+        """
+        names = []
+        page = 1
+        while True:
+            raw = await self.queries.query_rest(
+                "/user/repos", params={"per_page": 100, "type": "owner", "page": page}
+            )
+            if not isinstance(raw, list) or not raw:
+                break
+            names += [
+                repo["full_name"]
+                for repo in raw
+                if isinstance(repo, dict) and repo.get("full_name")
+            ]
+            if len(raw) < 100:
+                break
+            page += 1
+        return names
+
+    async def _known_repos(self) -> list:
+        """
+        :return: ordered, de-duplicated union of created and contributed repos
+        """
+        created = await self._created_repos()
+        contributed = await self._contributed_repos()
+        seen = set()
+        ordered = []
+        for name in created + sorted(contributed):
+            if name not in seen:
+                seen.add(name)
+                ordered.append(name)
+        return ordered
 
     @property
     async def name(self) -> str:
