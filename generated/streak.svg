@@ -58,9 +58,9 @@ svg {
 <g>
 <rect x="5" y="5" width="350" height="200" rx="6" ry="6" id="background" />
 <text x="21" y="34" class="title">Contribution Streak</text>
-<text x="21" y="96" class="big">3</text>
+<text x="21" y="96" class="big">4</text>
 <text x="21" y="120" class="unit">day current streak</text>
 <text x="21" y="150" class="meta"><tspan class="value">10</tspan> days longest streak</text>
-<text x="21" y="172" class="meta"><tspan class="value">1,222</tspan> contributions in 2026</text>
+<text x="21" y="172" class="meta"><tspan class="value">1,226</tspan> contributions in 2026</text>
 </g>
 </svg>
