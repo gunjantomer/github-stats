@@ -9,6 +9,61 @@ import aiohttp
 import requests
 
 
+# Language colors used by the languages card. The REST /languages endpoint no
+# longer reports colors, and fine-grained tokens cannot read the GraphQL
+# language color field, so colors are mapped from this (GitHub linguist) table.
+# Unknown languages fall back to the card's default color.
+_LANGUAGE_COLORS = {
+    "Python": "#3572A5",
+    "JavaScript": "#f1e05a",
+    "TypeScript": "#3178c6",
+    "C++": "#f34b7d",
+    "C": "#555555",
+    "C#": "#178600",
+    "Go": "#00ADD8",
+    "Java": "#b07219",
+    "Kotlin": "#A13D9D",
+    "Swift": "#F05138",
+    "Rust": "#dea584",
+    "Ruby": "#701516",
+    "PHP": "#4F5D95",
+    "Scala": "#c22d40",
+    "Shell": "#89e051",
+    "HTML": "#e34c26",
+    "CSS": "#563d7c",
+    "SCSS": "#c6538c",
+    "Jupyter Notebook": "#DA5B0B",
+    "MATLAB": "#e16737",
+    "R": "#198CE7",
+    "Dart": "#00B4AB",
+    "Vue": "#41b883",
+    "Svelte": "#ff3e00",
+    "Markdown": "#df5f43",
+    "Makefile": "#427819",
+    "CMake": "#84428f",
+    "TeX": "#3D6117",
+    "Lua": "#000080",
+    "Perl": "#9e3373",
+    "Haskell": "#5e5086",
+    "Elixir": "#6e4a7e",
+    "Objective-C": "#43abda",
+    "Groovy": "#e17b44",
+    "Solidity": "#AA6746",
+    "CUDA": "#0AEf09",
+    "GLSL": "#563d7c",
+    "YAML": "#121512",
+    "JSON": "#0064ff",
+    "Dockerfile": "#384d54",
+    "Batchfile": "#519842",
+    "PowerShell": "#012456",
+    "GDScript": "#608060",
+    "Zig": "#ec915c",
+    "Nix": "#9e91ca",
+    "Verilog": "#b2a79f",
+    "VHDL": "#adb3cb",
+}
+
+
 ###############################################################################
 # Main Classes
 ###############################################################################
@@ -266,14 +321,14 @@ Languages:
         """
         Get lots of summary statistics. Sets many attributes.
 
-        Fine-grained personal access tokens cannot read the GraphQL *viewer
-        repository connections* (``viewer.repositories`` /
-        ``repositoriesContributedTo``), which is why the language, stars, forks
-        and repository-count cards came back empty. This instead enumerates
-        repositories via viewer-scoped ``contributionsCollection`` (which works
-        with fine-grained tokens, and includes private repositories) plus the
-        owner's repositories from the REST API, then reads languages / stars /
-        forks through per-repository lookups that fine-grained tokens can serve.
+        Fine-grained personal access tokens cannot resolve the GraphQL
+        repository fields (viewer connections or ``repository()``), which is
+        why the language, stars, forks and repository-count cards came back
+        empty even though contributions and pull requests populated. This
+        therefore builds the repository set and the language / star / fork
+        totals from the REST API (which fine-grained tokens *do* serve,
+        including private repositories), using GraphQL only for the viewer
+        name and the best-effort contributed-repository list.
         """
         self._stargazers = 0
         self._forks = 0
@@ -288,46 +343,42 @@ Languages:
         )
         self._name = viewer.get("name") or viewer.get("login") or "No Name"
 
-        repos = await self._known_repos()
         exclude_langs_lower = {x.lower() for x in self._exclude_langs}
 
-        for chunk in self._chunked(repos, 25):
-            aliases = "\n".join(
-                f'  r{i}: repository(owner: "{owner}", name: "{name}") {{'
-                " nameWithOwner isFork stargazers { totalCount } forkCount"
-                " languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {"
-                " edges { size node { name color } } } }"
-                for i, (owner, name) in enumerate(r.split("/", 1) for r in chunk)
-            )
-            raw_results = await self.queries.query(f"{{\n{aliases}\n}}")
-            data = raw_results.get("data", {}) if isinstance(raw_results, dict) else {}
+        for full, stars, forks, is_fork in await self._collect_repos():
+            if is_fork and self._ignore_forked_repos:
+                continue
+            if full in self._repos or full in self._exclude_repos:
+                continue
+            self._repos.add(full)
+            self._stargazers += stars
+            self._forks += forks
 
-            for i, full in enumerate(chunk):
-                repo = data.get(f"r{i}")
-                if repo is None:
+        # Languages come from the REST API (fine-grained tokens serve it);
+        # colors come from an embedded map, since the REST /languages endpoint
+        # no longer reports them.
+        lang_results = await asyncio.gather(
+            *[
+                self.queries.query_rest(f"/repos/{full}/languages")
+                for full in self._repos
+            ],
+            return_exceptions=True,
+        )
+        for langs in lang_results:
+            if not isinstance(langs, dict):
+                continue
+            for lname, size in langs.items():
+                if lname.lower() in exclude_langs_lower:
                     continue
-                if self._ignore_forked_repos and repo.get("isFork"):
-                    continue
-                if full in self._repos or full in self._exclude_repos:
-                    continue
-                self._repos.add(full)
-                self._stargazers += repo.get("stargazers", {}).get("totalCount", 0)
-                self._forks += repo.get("forkCount", 0)
-
-                for lang in repo.get("languages", {}).get("edges", []):
-                    name = lang.get("node", {}).get("name", "Other")
-                    languages = await self.languages
-                    if name.lower() in exclude_langs_lower:
-                        continue
-                    if name in languages:
-                        languages[name]["size"] += lang.get("size", 0)
-                        languages[name]["occurrences"] += 1
-                    else:
-                        languages[name] = {
-                            "size": lang.get("size", 0),
-                            "occurrences": 1,
-                            "color": lang.get("node", {}).get("color"),
-                        }
+                if lname in self._languages:
+                    self._languages[lname]["size"] += size
+                    self._languages[lname]["occurrences"] += 1
+                else:
+                    self._languages[lname] = {
+                        "size": size,
+                        "occurrences": 1,
+                        "color": _LANGUAGE_COLORS.get(lname),
+                    }
 
         # TODO: Improve languages to scale by number of contributions to
         #       specific filetypes
@@ -336,10 +387,42 @@ Languages:
             for k, v in self._languages.items():
                 v["prop"] = 100 * (v.get("size", 0) / langs_total)
 
-    @staticmethod
-    def _chunked(seq, size):
-        for i in range(0, len(seq), size):
-            yield seq[i : i + size]
+    async def _collect_repos(self) -> list:
+        """
+        :return: list of ``(full_name, stargazers, forks, is_fork)`` tuples
+            built from the owner's repositories via REST, plus viewer-
+            contributed repositories (best-effort GraphQL) that the owner does
+            not already own.
+        """
+        repos = []
+        owned_names = set()
+        for repo in await self._created_repos():
+            full = repo.get("full_name")
+            if not full:
+                continue
+            owned_names.add(full)
+            repos.append(
+                (
+                    full,
+                    repo.get("stargazers_count", 0),
+                    repo.get("forks_count", 0),
+                    bool(repo.get("fork")),
+                )
+            )
+        for name in await self._contributed_repos():
+            if name in owned_names:
+                continue
+            obj = await self.queries.query_rest(f"/repos/{name}")
+            if isinstance(obj, dict) and obj.get("full_name"):
+                repos.append(
+                    (
+                        obj["full_name"],
+                        obj.get("stargazers_count", 0),
+                        obj.get("forks_count", 0),
+                        bool(obj.get("fork")),
+                    )
+                )
+        return repos
 
     async def _contributed_repos(self) -> set:
         """
@@ -373,40 +456,24 @@ Languages:
 
     async def _created_repos(self) -> list:
         """
-        :return: full names of repositories the owner owns, via the REST API
-            (which fine-grained tokens serve, including private repositories).
+        :return: repository objects the owner owns, via the REST API (which
+            fine-grained tokens serve, including private repositories), each
+            carrying full_name, stargazers_count, forks_count and fork.
         """
-        names = []
+        repos = []
         page = 1
         while True:
             raw = await self.queries.query_rest(
-                "/user/repos", params={"per_page": 100, "type": "owner", "page": page}
+                "/user/repos",
+                params={"per_page": 100, "type": "owner", "page": page},
             )
             if not isinstance(raw, list) or not raw:
                 break
-            names += [
-                repo["full_name"]
-                for repo in raw
-                if isinstance(repo, dict) and repo.get("full_name")
-            ]
+            repos += [repo for repo in raw if isinstance(repo, dict)]
             if len(raw) < 100:
                 break
             page += 1
-        return names
-
-    async def _known_repos(self) -> list:
-        """
-        :return: ordered, de-duplicated union of created and contributed repos
-        """
-        created = await self._created_repos()
-        contributed = await self._contributed_repos()
-        seen = set()
-        ordered = []
-        for name in created + sorted(contributed):
-            if name not in seen:
-                seen.add(name)
-                ordered.append(name)
-        return ordered
+        return repos
 
     @property
     async def name(self) -> str:
