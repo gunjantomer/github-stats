@@ -72,7 +72,7 @@ svg {
 <text x="21" y="34" class="title">Pull Requests</text>
 <text x="21" y="96" class="big">24</text>
 <text x="21" y="120" class="unit">pull requests opened (last year)</text>
-<text x="21" y="150" class="meta"><tspan class="value">85</tspan> commits contributed (last year)</text>
+<text x="21" y="150" class="meta"><tspan class="value">86</tspan> commits contributed (last year)</text>
 <text x="21" y="172" class="meta"><tspan class="value">4</tspan> repositories created (last year)</text>
 </g>
 </svg>
